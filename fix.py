@@ -7,6 +7,18 @@ import re,mysql.connector, datetime
 from db import *
 
 cursor = cnx.cursor(buffered=True)
+def set_thumb(post, p):
+	print("setting thumbnail to post %s to %s" % (post,p))
+	cursor.execute("select * from wp_postmeta where meta_key='_thumbnail_id' and post_id=%s" % (post))
+	res=cursor.fetchall()
+	print(res)
+	if len(res)==0:
+		cursor.execute("insert into wp_postmeta (meta_key, post_id, meta_value) VALUES ('_thumbnail_id', %s, %s)" % (post, p))
+		cnx.commit()
+	
+
+
+
 cursor.execute("SELECT p.id, p.post_content, p.post_title, p.post_type, m.meta_value from wp_posts p join wp_postmeta m on m.post_id=p.id where m.meta_key='air_video_link'", ())
 r=cursor.fetchall()
 for row in r:
@@ -34,8 +46,11 @@ for row in r:
 			date=datetime.datetime.now();
 			cursor.execute("INSERT INTO wp_posts (post_author, post_date, post_modified, post_date_gmt, post_modified_gmt,post_title, post_name, guid, post_type, post_mime_type, post_content, post_excerpt, to_ping, pinged, post_content_filtered) VALUES (1, '%s','%s','%s','%s','%s','%s','%s','attachment','image/png', '', '', '','','')" % (date, date, date, date, url, url, url))
 			cnx.commit()
-			
-		print(s)
+			id=cursor.lastrowid
+			print("insert %s" % (id))
+		print(id)
+		set_thumb(row[0], id)
+		
 
 """
 	cursor.execute("update wp_posts set post_type='portfolio-item' where id=%s"%(row[0]))

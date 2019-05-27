@@ -9,13 +9,14 @@ from db import *
 cursor = cnx.cursor(buffered=True)
 def set_thumb(post, p):
 	print("setting thumbnail to post %s to %s" % (post,p))
-	cursor.execute("select * from wp_postmeta where meta_key='_thumbnail_id' and post_id=%s" % (post))
+	cursor.execute("select meta_id from wp_postmeta where meta_key='_thumbnail_id' and post_id=%s" % (post))
 	res=cursor.fetchall()
 	print(res)
 	if len(res)==0:
 		cursor.execute("insert into wp_postmeta (meta_key, post_id, meta_value) VALUES ('_thumbnail_id', %s, %s)" % (post, p))
-		cnx.commit()
-	
+	else:
+		cursor.execute("UPDATE wp_postmeta set meta_value='%s' where meta_id=%s" % (p, res[0][0]))
+	cnx.commit()
 
 
 
